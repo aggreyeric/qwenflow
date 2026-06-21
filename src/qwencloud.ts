@@ -30,6 +30,11 @@ export class QwenCloudClient {
     return this.apiKey.length > 0;
   }
 
+  validate(): { valid: boolean; error?: string } {
+    if (this.isConfigured) return { valid: true };
+    return { valid: false, error: "No API key configured" };
+  }
+
   /**
    * Send a chat completion request to the Qwen Cloud / DashScope API.
    * Model IDs are mapped: "qwen3-8b" → "qwen3-8b" (DashScope uses same naming).
