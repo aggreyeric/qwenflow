@@ -24,7 +24,7 @@ Under the hood, a `@slack/bolt` app registers the `/qwenflow` command and delega
 TypeScript · Node 18+ · Express 4 · `@slack/bolt` · QwenFlow orchestrator · Qwen models · Google Gemini · tsx · vitest
 
 **Demo Video URL**
-_TODO: record demo, paste YouTube URL here_
+[Eric: add YouTube/Drive link — see `scripts/demo.sh` to record locally]
 
 **GitHub URL**
 https://github.com/aggreyeric/qwenflow

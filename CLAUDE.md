@@ -13,10 +13,10 @@ QwenFlow is an AI agent orchestration framework for the Qwen Cloud hackathon. It
 ## Commands
 - `npm install` — install deps
 - `npm run dev` — dev server with tsx watch (port 3000)
-- `npm run build` — TypeScript compile to dist/
+- `npm run build` (`npx tsc`) — TypeScript compile to dist/
 - `npm test` — vitest run (78 test cases across 8 suites)
 - `npm run test:ci` — vitest run with verbose reporter for CI output
-- `npm start` — production (runs src/index.ts via tsx, port 3000)
+- `npm start` (`node dist/index.js`) — production server (port 3000)
 
 ## Architecture
 - src/index.ts — Express entrypoint, mounts routes
