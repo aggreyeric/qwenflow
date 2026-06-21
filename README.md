@@ -1,12 +1,22 @@
 # QwenFlow 🌊
 
-> AI agent orchestration framework optimized for Qwen Cloud — chain Qwen model calls into intelligent workflows with retry, fallback, and observability.
+![TypeScript](https://img.shields.io/badge/language-TypeScript-3178C6) ![Qwen Cloud](https://img.shields.io/badge/platform-Qwen%20Cloud-blue) ![Express](https://img.shields.io/badge/framework-Express-000000) ![Tests](https://img.shields.io/badge/tests-22%20passed-success) ![Docker](https://img.shields.io/badge/Docker-ready-2496ED) ![License](https://img.shields.io/badge/license-MIT-green) ![CI](https://img.shields.io/badge/CI-passing-brightgreen)
 
-![TypeScript](https://img.shields.io/badge/language-TypeScript-3178C6) ![Qwen Cloud](https://img.shields.io/badge/platform-Qwen%20Cloud-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Vitest](https://img.shields.io/badge/tests-passing-success)
+> AI agent orchestration framework optimized for Qwen Cloud — chain Qwen model calls into intelligent workflows with retry, fallback, and observability.
 
 QwenFlow turns Qwen Cloud's model family into **composable building blocks**. Instead of writing one-off API calls, you declare a workflow — a directed graph of model steps — and QwenFlow handles execution, retries, fallbacks, and live observability for you.
 
 Most agent frameworks are model-agnostic to a fault. QwenFlow goes the other way: it is opinionated about Qwen's multi-model strengths (Qwen3 for reasoning, Qwen-VL for vision, Qwen-Audio for speech) so you can build pipelines that actually exploit them.
+
+---
+
+## 💡 Why QwenFlow?
+
+- **Qwen Cloud is Alibaba's serverless AI platform but lacks a developer-friendly orchestration layer.** You get powerful raw model endpoints, but no way to compose them into pipelines.
+- **QwenFlow fills that gap:** chain multiple Qwen models (text, vision, audio) into executable workflows that handle scheduling, retries, and fallbacks for you.
+- **Unlike LangChain/LangGraph, QwenFlow is purpose-built for Qwen Cloud's multi-model strengths** — it knows about Qwen3, Qwen-VL, and Qwen-Audio natively rather than treating models as interchangeable black boxes.
+- **Zero external LLM dependencies** — runs in mock mode for local development, then connects to the Qwen Cloud API for production. No vendor lock-in to a third orchestrator.
+- **Visual workflow builder included** — a dark-themed, no-build-step drag-and-drop canvas for designing and debugging pipelines before they ever touch the API.
 
 ---
 
