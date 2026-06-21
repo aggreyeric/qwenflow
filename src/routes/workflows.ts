@@ -1,10 +1,9 @@
 import { Router, Request, Response } from "express";
 import { Orchestrator } from "../orchestrator.js";
 import { Workflow, WorkflowStep } from "../types.js";
+import { getAllWorkflows, getWorkflow, setWorkflow } from "../store.js";
 
 export const workflowRouter = Router();
-
-const store: Map<string, Workflow> = new Map();
 
 workflowRouter.post("/", (req: Request, res: Response) => {
   const { name, description, steps } = req.body;
@@ -27,16 +26,16 @@ workflowRouter.post("/", (req: Request, res: Response) => {
     createdAt: new Date(),
     status: "ready",
   };
-  store.set(workflow.id, workflow);
+  setWorkflow(workflow.id, workflow);
   res.status(201).json(workflow);
 });
 
 workflowRouter.get("/", (_req: Request, res: Response) => {
-  res.json(Array.from(store.values()));
+  res.json(Array.from(getAllWorkflows().values()));
 });
 
 workflowRouter.post("/:id/run", async (req: Request, res: Response) => {
-  const workflow = store.get(req.params.id);
+  const workflow = getWorkflow(req.params.id);
   if (!workflow) {
     res.status(404).json({ error: "Workflow not found" });
     return;
@@ -47,7 +46,7 @@ workflowRouter.post("/:id/run", async (req: Request, res: Response) => {
 });
 
 workflowRouter.get("/:id/status", (req: Request, res: Response) => {
-  const workflow = store.get(req.params.id);
+  const workflow = getWorkflow(req.params.id);
   if (!workflow) {
     res.status(404).json({ error: "Workflow not found" });
     return;
