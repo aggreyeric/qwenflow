@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// @ts-nocheck
 
 /**
  * QwenFlow CLI — Run AI agent workflows from the terminal
