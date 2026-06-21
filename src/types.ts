@@ -1,4 +1,4 @@
-export type ModelId = "qwen3-4b" | "qwen3-8b" | "qwen3-32b" | "qwen-vl" | "qwen-audio";
+export type ModelId = "qwen3-4b" | "qwen3-8b" | "qwen3-32b" | "qwen-vl" | "qwen-audio" | "gemini-1.5-flash" | "gemini-1.5-pro" | "gemini-2.0-flash";
 
 export interface WorkflowStep {
   id: string;

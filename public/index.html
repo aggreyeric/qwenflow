@@ -92,6 +92,19 @@
     letter-spacing: 0.02em;
   }
 
+  .multi-model-badge {
+    display: inline-block;
+    background: linear-gradient(90deg, rgba(0, 217, 255, 0.12), rgba(124, 92, 255, 0.16));
+    color: var(--text);
+    border: 1px solid rgba(124, 92, 255, 0.35);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    margin-bottom: 14px;
+  }
+
   /* Layout */
   .layout {
     display: grid;
@@ -524,6 +537,8 @@
           <label for="wf-name">Workflow Name</label>
           <input type="text" id="wf-name" placeholder="e.g. Research & Summarize Pipeline" />
         </div>
+
+        <div class="multi-model-badge">🤖 Multi-model: Qwen + Gemini</div>
 
         <div id="steps-container"></div>
 

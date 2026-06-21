@@ -104,6 +104,9 @@ export class QwenCloudClient {
       "qwen3-32b": "qwen3-32b",
       "qwen-vl": "qwen-vl-max",
       "qwen-audio": "qwen-audio-turbo",
+      "gemini-1.5-flash": "gemini-1.5-flash",
+      "gemini-1.5-pro": "gemini-1.5-pro",
+      "gemini-2.0-flash": "gemini-2.0-flash",
     };
     return mapping[model] || model;
   }
