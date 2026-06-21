@@ -1,25 +1,30 @@
 import { describe, it, expect } from "vitest";
-import { QWEN_MODELS, type Workflow, type ModelId } from "../src/types.js";
+import { listModels, getModelCapabilities } from "../src/models.js";
+import type { Workflow, ModelId } from "../src/types.js";
 
 describe("QwenFlow Types", () => {
-  it("QWEN_MODELS has all 5 models", () => {
-    expect(QWEN_MODELS).toHaveLength(5);
-    const ids = QWEN_MODELS.map((m) => m.id);
+  it("model registry has all 8 models (5 Qwen + 3 Gemini)", () => {
+    const models = listModels();
+    expect(models.length).toBeGreaterThanOrEqual(8);
+    const ids = models.map((m) => m.id);
     expect(ids).toContain("qwen3-4b");
     expect(ids).toContain("qwen3-8b");
     expect(ids).toContain("qwen3-32b");
     expect(ids).toContain("qwen-vl");
     expect(ids).toContain("qwen-audio");
+    expect(ids).toContain("gemini-1.5-flash");
+    expect(ids).toContain("gemini-1.5-pro");
+    expect(ids).toContain("gemini-2.0-flash");
   });
 
-  it("each model has required fields", () => {
-    for (const model of QWEN_MODELS) {
+  it("each model has required capabilities", () => {
+    const models = listModels();
+    for (const model of models) {
       expect(model.id).toBeTruthy();
-      expect(model.name).toBeTruthy();
-      expect(model.description).toBeTruthy();
-      expect(model.capabilities).toBeInstanceOf(Array);
-      expect(model.contextWindow).toBeGreaterThan(0);
-      expect(model.maxOutput).toBeGreaterThan(0);
+      expect(model.maxContextTokens).toBeGreaterThan(0);
+      expect(typeof model.supportsVision).toBe("boolean");
+      expect(typeof model.supportsAudio).toBe("boolean");
+      expect(typeof model.supportsTools).toBe("boolean");
     }
   });
 
@@ -47,7 +52,7 @@ describe("QwenFlow Types", () => {
   });
 
   it("model context windows are ordered by size", () => {
-    const byContext = [...QWEN_MODELS].sort((a, b) => a.contextWindow - b.contextWindow);
-    expect(byContext[0].contextWindow).toBeLessThanOrEqual(byContext[byContext.length - 1].contextWindow);
+    const byContext = [...listModels()].sort((a, b) => a.maxContextTokens - b.maxContextTokens);
+    expect(byContext[0].maxContextTokens).toBeLessThanOrEqual(byContext[byContext.length - 1].maxContextTokens);
   });
 });

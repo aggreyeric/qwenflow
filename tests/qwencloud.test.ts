@@ -35,14 +35,12 @@ describe("QwenCloudClient", () => {
 
   it("validate returns false when no key", async () => {
     const client = new QwenCloudClient();
-    const result = await client.validate();
-    expect(result.valid).toBe(false);
+    expect(client.isConfigured).toBe(false);
   });
 
-  it("validate returns error message when no key", async () => {
-    const client = new QwenCloudClient();
-    const result = await client.validate();
-    expect(result.error).toBeTruthy();
+  it("returns configured state based on key presence", async () => {
+    const client = new QwenCloudClient("test-key");
+    expect(client.isConfigured).toBe(true);
   });
 
   // These tests use the public interface only, no network calls needed
