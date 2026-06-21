@@ -67,7 +67,18 @@ npm run build
 npm start
 ```
 
-The server starts at http://localhost:3000
+The server starts at http://localhost:3000. To enable **Gemini** models alongside Qwen, export the Google AI Studio key:
+
+```bash
+export GEMINI_API_KEY=your-google-ai-studio-key   # optional — enables Gemini routing
+```
+
+| Command              | Description                       |
+| -------------------- | --------------------------------- |
+| `npm run dev`        | Dev server with hot reload (tsx)  |
+| `npm run typecheck`  | Type-check only, no emit          |
+| `npm test`           | Run the Vitest suite once         |
+| `npm run test:watch` | Run tests in watch mode           |
 
 ### With Docker
 ```bash
@@ -131,38 +142,36 @@ QwenFlow is a pipeline-oriented orchestrator. A **workflow** is a DAG of **steps
 
 ---
 
-## 🚀 Quick Start
+## 🧭 Multi-Model Architecture
 
-**Prerequisites:** Node.js 18+ and a [Qwen Cloud / DashScope API key](https://dashscope.console.aliyun.com/).
+The **Model Router** inspects each step's `model` field and dispatches to the right provider: `qwen*` models go to the DashScope (Qwen Cloud) endpoint, and `gemini*` models go to the Google AI Studio endpoint. Because routing is per-step, a single workflow can fan out across both families — Qwen3 for reasoning, Gemini 2.0 Flash for fast multimodal calls — with fallbacks that can cross provider boundaries.
 
-```bash
-# 1. Install dependencies
-npm install
-
-# 2. Provide your Qwen Cloud key
-export DASHSCOPE_API_KEY=sk-your-key-here
-
-# 3. Start the dev server (hot reload via tsx watch)
-npm run dev
-
-# 4. Open the UI
-#    → http://localhost:3000
+```json
+{
+  "name": "qwen-gemini-router",
+  "steps": [
+    {
+      "id": "reason",
+      "model": "qwen3-72b-instruct",
+      "prompt": "Outline the key arguments for: ${inputs.topic}"
+    },
+    {
+      "id": "flash",
+      "model": "gemini-2.0-flash",
+      "prompt": "Summarize and fact-check this outline:\n${steps.reason.output}",
+      "fallback": "qwen3-32b-instruct"
+    },
+    {
+      "id": "finalize",
+      "model": "gemini-1.5-pro",
+      "prompt": "Produce a polished 3-paragraph brief from:\n${steps.flash.output}"
+    }
+  ],
+  "output": "${steps.finalize.output}"
+}
 ```
 
-From the UI you can drag steps onto the canvas, wire them together, and hit **Run** to execute the workflow against Qwen Cloud with a live trace panel. You can also drive QwenFlow headlessly from the CLI:
-
-```bash
-npx qwenflow run ./workflows/sentiment.json
-```
-
-Other useful scripts:
-
-| Command              | Description                              |
-| -------------------- | ---------------------------------------- |
-| `npm run build`      | Type-check and compile to `dist/`        |
-| `npm run typecheck`  | Type-check only, no emit                 |
-| `npm test`           | Run the Vitest suite once                |
-| `npm run test:watch` | Run tests in watch mode                  |
+Here `reason` runs on Qwen3, `flash` on Gemini 2.0 Flash (falling back to a Qwen model if Gemini is rate-limited), and `finalize` on Gemini 1.5 Pro — all coordinated by one orchestrator with a unified trace.
 
 ---
 
@@ -225,9 +234,12 @@ npm run test:watch
 
 ---
 
-## 🎯 Hackathon Tracks
+## 🏆 Built For
 
-Built for the **Qwen Cloud AI Hackathon** — a $70K prize pool across 5 tracks. QwenFlow targets the multi-model orchestration and developer-tooling tracks, showcasing how Qwen Cloud's text, vision, and audio models compose into something greater than the sum of their parts.
+| Hackathon | Prize Pool | Our Angle |
+|-----------|-----------|-----------|
+| **Qwen Cloud AI Hackathon** | $70K | Multi-model orchestration + developer tooling across Qwen3, Qwen-VL, and Qwen-Audio |
+| **Gemini XPRIZE** | $2M | Cross-provider routing that pairs Gemini's multimodal speed with Qwen's reasoning depth |
 
 ---
 
