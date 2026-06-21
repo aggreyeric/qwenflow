@@ -1,16 +1,16 @@
 # QwenFlow 🌊
 
-![TypeScript](https://img.shields.io/badge/language-TypeScript-3178C6) ![Qwen Cloud](https://img.shields.io/badge/platform-Qwen%20Cloud-blue) ![Express](https://img.shields.io/badge/framework-Express-000000) ![Tests](https://img.shields.io/badge/tests-65%20passed-success) ![Docker](https://img.shields.io/badge/Docker-ready-2496ED) ![License](https://img.shields.io/badge/license-MIT-green) ![CI](https://img.shields.io/badge/CI-passing-brightgreen)
+![TypeScript](https://img.shields.io/badge/language-TypeScript-3178C6) ![Qwen Cloud](https://img.shields.io/badge/platform-Qwen%20Cloud-blue) ![Gemini](https://img.shields.io/badge/models-Qwen%20%2B%20Gemini-4285F4) ![Express](https://img.shields.io/badge/framework-Express-000000) ![Tests](https://img.shields.io/badge/tests-65%20passed-success) ![Docker](https://img.shields.io/badge/Docker-ready-2496ED) ![License](https://img.shields.io/badge/license-MIT-green) ![CI](https://img.shields.io/badge/CI-passing-brightgreen)
 
 ## 📸 Screenshot
 
 ![QwenFlow UI](docs/screenshot-ui.png)
 
-*QwenFlow orchestrates multi-step AI workflows using Qwen Cloud's model API.*
+*QwenFlow orchestrates multi-step AI workflows using multi-model orchestration across Qwen Cloud and Google Gemini.*
 
-> AI agent orchestration framework optimized for Qwen Cloud — chain Qwen model calls into intelligent workflows with retry, fallback, and observability.
+> Multi-model AI agent orchestration framework combining Qwen Cloud and Google Gemini — chain Qwen and Gemini model calls into intelligent workflows with retry, fallback, and observability.
 
-QwenFlow turns Qwen Cloud's model family into **composable building blocks**. Instead of writing one-off API calls, you declare a workflow — a directed graph of model steps — and QwenFlow handles execution, retries, fallbacks, and live observability for you.
+QwenFlow turns the Qwen Cloud and Google Gemini model families into **composable building blocks**. Instead of writing one-off API calls, you declare a workflow — a directed graph of model steps — and QwenFlow handles execution, retries, fallbacks, and live observability for you.
 
 Most agent frameworks are model-agnostic to a fault. QwenFlow goes the other way: it is opinionated about Qwen's multi-model strengths (Qwen3 for reasoning, Qwen-VL for vision, Qwen-Audio for speech) so you can build pipelines that actually exploit them.
 
@@ -24,12 +24,26 @@ Most agent frameworks are model-agnostic to a fault. QwenFlow goes the other way
 - **Zero external LLM dependencies** — runs in mock mode for local development, then connects to the Qwen Cloud API for production. No vendor lock-in to a third orchestrator.
 - **Visual workflow builder included** — a dark-themed, no-build-step drag-and-drop canvas for designing and debugging pipelines before they ever touch the API.
 
+### How QwenFlow compares
+
+QwenFlow is the easiest way to build multi-step AI agent pipelines — a beautiful dark-themed visual editor, zero-configuration Docker setup, and a full REST API, purpose-built for multi-model orchestration with Qwen Cloud and Gemini.
+
+| Feature | QwenFlow | LangChain | CrewAI |
+|---------|----------|-----------|--------|
+| Multi-model orchestration | ✅ Qwen + Gemini | ✅ Any LLM | ✅ Any LLM |
+| Visual workflow editor | ✅ Dark UI | ❌ Code only | ❌ Code only |
+| Zero-config setup | ✅ Docker one command | ❌ Complex deps | ❌ Complex deps |
+| REST API | ✅ Full CRUD | ❌ Python only | ❌ Python only |
+| Zod validation | ✅ Type-safe schemas | ⚠️ Pydantic | ⚠️ Basic |
+| Open source | ✅ MIT | ✅ MIT | ✅ MIT |
+| Hackathon-ready | ✅ Demo + Screenshots | ❌ | ❌ |
+
 ---
 
 ## ✨ Features
 
 - **Visual workflow builder** — drag-and-drop model chaining, with the full graph serializable to/from JSON
-- **Multi-model orchestration** — Qwen3, Qwen-VL, and Qwen-Audio in a single workflow, each step routed to the right model
+- **Multi-model orchestration** — Qwen3, Qwen-VL, Qwen-Audio, and Google Gemini (Gemini 2.0 Flash, Gemini 1.5 Pro) in a single workflow, each step routed to the right model
 - **Smart retry** — exponential backoff with automatic model fallback when a step exceeds its budget or rate limit
 - **Real-time execution observability** — per-step status, latency, token usage, and cost streamed live
 - **Zero-config local development** — reads `DASHSCOPE_API_KEY` from the environment, no setup wizard
@@ -73,6 +87,7 @@ node dist/cli.js run --name "test" --prompt "Hello"
 |----------|----------|---------|-------------|
 | PORT | No | 3000 | Server port |
 | DASHSCOPE_API_KEY | No | — | Qwen Cloud/DashScope API key |
+| GEMINI_API_KEY | No | — | Google AI Studio API key (optional, enables Gemini models) |
 
 ---
 
@@ -215,6 +230,19 @@ npm run test:watch
 Built for the **Qwen Cloud AI Hackathon** — a $70K prize pool across 5 tracks. QwenFlow targets the multi-model orchestration and developer-tooling tracks, showcasing how Qwen Cloud's text, vision, and audio models compose into something greater than the sum of their parts.
 
 ---
+
+---
+
+## 🏆 Other Projects by aggreyeric
+
+| Project | Description | Prize |
+|---------|-------------|-------|
+| [ZeroDeploy](https://github.com/aggreyeric/h0-zerostack) | GitHub repo quality scorer | $80K |
+| [Casper Forge](https://github.com/aggreyeric/casper-forge-x402) | x402 payment protocol for Casper | $150K |
+| [Veritas ZK](https://github.com/aggreyeric/veritas-zk) | Zero-knowledge credential verifier | $10K |
+| [BNB Market Regime](https://github.com/aggreyeric/bnb-market-regime-oracle) | BTC regime classifier | $36K |
+| [Tether QVAC Solace](https://github.com/aggreyeric/tether-qvac-solace) | Mental health companion | $21K |
+| [BLI Compliance](https://github.com/aggreyeric/bli-compliance-agent) | Legal compliance agent | $50K |
 
 ## License
 
