@@ -1,4 +1,5 @@
-import { ModelId, ModelCapabilities, ModelResponse } from "./types";
+import { ModelId, ModelCapabilities, ModelResponse } from "./types.js";
+import { QwenCloudClient } from "./qwencloud.js";
 
 const MODEL_REGISTRY: Record<ModelId, ModelCapabilities> = {
   "qwen3-4b": { id: "qwen3-4b", maxContextTokens: 32768, supportsVision: false, supportsAudio: false, supportsTools: true, costPerMillionTokens: 0 },
@@ -16,15 +17,17 @@ export function listModels(): ModelCapabilities[] {
   return Object.values(MODEL_REGISTRY);
 }
 
+// Shared Qwen Cloud client instance
+const qwenClient = new QwenCloudClient();
+
 export async function callModel(model: ModelId, prompt: string, options?: { temperature?: number; maxTokens?: number }): Promise<ModelResponse> {
-  const start = Date.now();
-  // Placeholder — in production, this calls Qwen Cloud API
-  const content = `[Qwen Cloud] Model ${model} processed: "${prompt.slice(0, 50)}..."`;
-  const latency = Date.now() - start;
+  const result = await qwenClient.chat(model, prompt, options);
   return {
     model,
-    content,
-    tokens: { prompt: Math.ceil(prompt.length / 4), completion: Math.ceil(content.length / 4) },
-    latency,
+    content: result.content,
+    tokens: result.tokens,
+    latency: result.latency,
   };
 }
+
+export { QwenCloudClient };
