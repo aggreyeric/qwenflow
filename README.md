@@ -2,6 +2,12 @@
 
 ![TypeScript](https://img.shields.io/badge/language-TypeScript-3178C6) ![Qwen Cloud](https://img.shields.io/badge/platform-Qwen%20Cloud-blue) ![Express](https://img.shields.io/badge/framework-Express-000000) ![Tests](https://img.shields.io/badge/tests-22%20passed-success) ![Docker](https://img.shields.io/badge/Docker-ready-2496ED) ![License](https://img.shields.io/badge/license-MIT-green) ![CI](https://img.shields.io/badge/CI-passing-brightgreen)
 
+## 📸 Screenshot
+
+![QwenFlow UI](docs/screenshot-ui.png)
+
+*QwenFlow orchestrates multi-step AI workflows using Qwen Cloud's model API.*
+
 > AI agent orchestration framework optimized for Qwen Cloud — chain Qwen model calls into intelligent workflows with retry, fallback, and observability.
 
 QwenFlow turns Qwen Cloud's model family into **composable building blocks**. Instead of writing one-off API calls, you declare a workflow — a directed graph of model steps — and QwenFlow handles execution, retries, fallbacks, and live observability for you.
