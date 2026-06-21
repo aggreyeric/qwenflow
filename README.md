@@ -219,3 +219,7 @@ Built for the **Qwen Cloud AI Hackathon** — a $70K prize pool across 5 tracks.
 ## License
 
 MIT © QwenFlow Contributors
+
+## 🤖 AI Assistants
+
+→ See [CLAUDE.md](./CLAUDE.md) for AI coding assistant context.
