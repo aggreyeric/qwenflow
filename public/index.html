@@ -1,544 +1,835 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QwenFlow — AI Agent Orchestrator</title>
-  <style>
-    :root {
-      --bg: #0a0a1a;
-      --surface: #12122a;
-      --card: #1a1a3e;
-      --card-hover: #222255;
-      --accent: #00d9ff;
-      --accent2: #7b61ff;
-      --success: #00ff88;
-      --warning: #ffaa00;
-      --danger: #ff4466;
-      --text: #e0e0ff;
-      --text-dim: #8888aa;
-      --border: #2a2a4a;
-      --radius: 12px;
-    }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-    }
-    header {
-      background: linear-gradient(135deg, var(--surface), var(--card));
-      padding: 20px 32px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    header h1 {
-      font-size: 24px;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    header .status {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: var(--success);
-      font-size: 14px;
-    }
-    header .status::before {
-      content: '';
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--success);
-      animation: pulse 2s infinite;
-    }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.3; }
-    }
-    main {
-      display: grid;
-      grid-template-columns: 280px 1fr 320px;
-      gap: 0;
-      height: calc(100vh - 73px);
-    }
-    .sidebar {
-      background: var(--surface);
-      border-right: 1px solid var(--border);
-      padding: 20px;
-      overflow-y: auto;
-    }
-    .sidebar h3 {
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: var(--text-dim);
-      margin-bottom: 12px;
-    }
-    .model-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 14px;
-      margin-bottom: 10px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .model-card:hover {
-      background: var(--card-hover);
-      border-color: var(--accent);
-      transform: translateX(4px);
-    }
-    .model-card.selected {
-      border-color: var(--accent);
-      box-shadow: 0 0 12px rgba(0, 217, 255, 0.2);
-    }
-    .model-card .name {
-      font-weight: 600;
-      font-size: 15px;
-      color: var(--accent);
-    }
-    .model-card .desc {
-      font-size: 12px;
-      color: var(--text-dim);
-      margin-top: 4px;
-    }
-    .model-card .caps {
-      display: flex;
-      gap: 4px;
-      flex-wrap: wrap;
-      margin-top: 8px;
-    }
-    .model-card .caps span {
-      background: rgba(0, 217, 255, 0.1);
-      color: var(--accent);
-      padding: 2px 8px;
-      border-radius: 10px;
-      font-size: 10px;
-    }
-    .canvas {
-      padding: 24px;
-      overflow-y: auto;
-    }
-    .canvas h2 {
-      font-size: 18px;
-      margin-bottom: 4px;
-    }
-    .canvas .subtitle {
-      color: var(--text-dim);
-      font-size: 13px;
-      margin-bottom: 20px;
-    }
-    .step-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 16px;
-      margin-bottom: 12px;
-      position: relative;
-      transition: all 0.2s;
-    }
-    .step-card:hover {
-      border-color: var(--accent2);
-    }
-    .step-card .step-num {
-      position: absolute;
-      top: -10px;
-      left: 16px;
-      background: var(--accent);
-      color: var(--bg);
-      font-weight: 700;
-      font-size: 12px;
-      padding: 2px 10px;
-      border-radius: 10px;
-    }
-    .step-card .step-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-    .step-card select, .step-card input, .step-card textarea {
-      width: 100%;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 10px 12px;
-      color: var(--text);
-      font-size: 13px;
-      font-family: inherit;
-      margin-bottom: 8px;
-    }
-    .step-card select:focus, .step-card input:focus, .step-card textarea:focus {
-      outline: none;
-      border-color: var(--accent);
-    }
-    .step-card textarea {
-      min-height: 60px;
-      resize: vertical;
-    }
-    .step-card .temp-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .step-card .temp-row label {
-      font-size: 12px;
-      color: var(--text-dim);
-      min-width: 80px;
-    }
-    .step-card .temp-row input[type="range"] {
-      flex: 1;
-      accent-color: var(--accent);
-    }
-    .step-card .temp-row .val {
-      font-size: 13px;
-      color: var(--accent);
-      min-width: 30px;
-      text-align: right;
-    }
-    .remove-step {
-      background: none;
-      border: 1px solid var(--danger);
-      color: var(--danger);
-      border-radius: 6px;
-      padding: 4px 10px;
-      cursor: pointer;
-      font-size: 11px;
-    }
-    .remove-step:hover {
-      background: var(--danger);
-      color: white;
-    }
-    .add-step-btn {
-      width: 100%;
-      padding: 14px;
-      background: transparent;
-      border: 2px dashed var(--border);
-      border-radius: var(--radius);
-      color: var(--text-dim);
-      font-size: 14px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .add-step-btn:hover {
-      border-color: var(--accent);
-      color: var(--accent);
-    }
-    .workflow-name {
-      width: 100%;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 10px 12px;
-      color: var(--text);
-      font-size: 16px;
-      font-weight: 600;
-      margin-bottom: 16px;
-    }
-    .workflow-name:focus {
-      outline: none;
-      border-color: var(--accent);
-    }
-    .actions {
-      display: flex;
-      gap: 10px;
-      margin-top: 16px;
-    }
-    .btn-run {
-      flex: 1;
-      padding: 14px;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      border: none;
-      border-radius: var(--radius);
-      color: white;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .btn-run:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 20px rgba(0, 217, 255, 0.3);
-    }
-    .btn-run:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      transform: none;
-    }
-    .btn-run.running {
-      animation: glow 1.5s infinite;
-    }
-    @keyframes glow {
-      0%, 100% { box-shadow: 0 0 10px rgba(0, 217, 255, 0.2); }
-      50% { box-shadow: 0 0 25px rgba(0, 217, 255, 0.5); }
-    }
-    .results-panel {
-      background: var(--surface);
-      border-left: 1px solid var(--border);
-      padding: 20px;
-      overflow-y: auto;
-    }
-    .results-panel h3 {
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: var(--text-dim);
-      margin-bottom: 16px;
-    }
-    .result-item {
-      background: var(--card);
-      border-radius: 8px;
-      padding: 14px;
-      margin-bottom: 10px;
-      border-left: 3px solid var(--accent);
-    }
-    .result-item.pending {
-      border-left-color: var(--warning);
-      opacity: 0.5;
-    }
-    .result-item.error {
-      border-left-color: var(--danger);
-    }
-    .result-item .r-head {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 8px;
-    }
-    .result-item .r-model {
-      color: var(--accent);
-      font-weight: 600;
-      font-size: 13px;
-    }
-    .result-item .r-meta {
-      color: var(--text-dim);
-      font-size: 11px;
-    }
-    .result-item .r-content {
-      font-size: 13px;
-      line-height: 1.6;
-      color: var(--text);
-    }
-    .empty-state {
-      text-align: center;
-      padding: 40px 20px;
-      color: var(--text-dim);
-    }
-    .empty-state .icon {
-      font-size: 40px;
-      margin-bottom: 12px;
-    }
-    .connector {
-      width: 2px;
-      height: 20px;
-      background: var(--border);
-      margin: 0 auto;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>QwenFlow — AI Agent Orchestration</title>
+<style>
+  :root {
+    --bg: #0f0f23;
+    --card: #1a1a2e;
+    --card-2: #16162a;
+    --accent: #00d9ff;
+    --accent-dim: rgba(0, 217, 255, 0.15);
+    --text: #e0e0ff;
+    --text-dim: #8a8aae;
+    --border: #2a2a45;
+    --danger: #ff5c7c;
+    --ok: #3ad29f;
+    --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    --radius: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(circle at 20% 0%, rgba(0, 217, 255, 0.06) 0%, transparent 40%),
+      radial-gradient(circle at 80% 100%, rgba(124, 92, 255, 0.05) 0%, transparent 40%);
+  }
+
+  /* Header */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 32px;
+    background: rgba(26, 26, 46, 0.7);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo-mark {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    background: linear-gradient(135deg, var(--accent), #7c5cff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 20px;
+    color: #0f0f23;
+    box-shadow: 0 0 24px rgba(0, 217, 255, 0.4);
+  }
+
+  .logo-text h1 {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .logo-text h1 span { color: var(--accent); }
+
+  .logo-text p {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 2px;
+  }
+
+  .version-badge {
+    background: var(--accent-dim);
+    color: var(--accent);
+    border: 1px solid rgba(0, 217, 255, 0.3);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  /* Layout */
+  .layout {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 24px;
+    padding: 24px 32px;
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+
+  /* Sidebar */
+  .sidebar h2,
+  .main h2 {
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+    margin-bottom: 14px;
+    font-weight: 600;
+  }
+
+  .model-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    transition: all 0.2s ease;
+    cursor: default;
+  }
+
+  .model-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0, 217, 255, 0.1);
+  }
+
+  .model-card .model-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+
+  .model-card .model-name {
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--text);
+  }
+
+  .model-card .model-ctx {
+    font-size: 11px;
+    background: var(--accent-dim);
+    color: var(--accent);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 600;
+  }
+
+  .model-card .model-caps {
+    font-size: 12px;
+    color: var(--text-dim);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 6px;
+  }
+
+  .cap-pill {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+  }
+
+  /* Main panel */
+  .main {
+    min-width: 0; /* allow grid items to shrink */
+  }
+
+  .panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+  }
+
+  .panel-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .panel-title::before {
+    content: '';
+    width: 4px;
+    height: 18px;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+
+  /* Form elements */
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  input[type="text"],
+  textarea,
+  select {
+    width: 100%;
+    background: var(--card-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: var(--text);
+    font-size: 14px;
+    font-family: inherit;
+    transition: border-color 0.2s ease;
+  }
+
+  input[type="text"]:focus,
+  textarea:focus,
+  select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0, 217, 255, 0.12);
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 72px;
+  }
+
+  select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a8aae' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+    cursor: pointer;
+  }
+
+  select option {
+    background: var(--card-2);
+    color: var(--text);
+  }
+
+  .field {
+    margin-bottom: 16px;
+  }
+
+  /* Steps */
+  .step {
+    background: var(--card-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 14px;
+    position: relative;
+  }
+
+  .step-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  .step-index {
+    background: var(--accent);
+    color: #0f0f23;
+    font-weight: 800;
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+  }
+
+  .step-grid {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 12px;
+    align-items: start;
+  }
+
+  @media (max-width: 760px) {
+    .step-grid { grid-template-columns: 1fr; }
+  }
+
+  .temp-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 12px;
+  }
+
+  input[type="range"] {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    outline: none;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: var(--accent);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 8px rgba(0, 217, 255, 0.5);
+  }
+
+  input[type="range"]::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: var(--accent);
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+  }
+
+  .temp-value {
+    font-family: 'SF Mono', Menlo, monospace;
+    font-size: 13px;
+    color: var(--accent);
+    min-width: 36px;
+    text-align: right;
+    font-weight: 600;
+  }
+
+  /* Buttons */
+  .btn {
+    border: none;
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-ghost {
+    background: transparent;
+    border: 1px dashed var(--border);
+    color: var(--text-dim);
+    width: 100%;
+    justify-content: center;
+    padding: 12px;
+  }
+
+  .btn-ghost:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #0f0f23;
+  }
+
+  .btn-primary:hover {
+    background: #1ae4ff;
+    box-shadow: 0 4px 20px rgba(0, 217, 255, 0.35);
+    transform: translateY(-1px);
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  .btn-icon {
+    background: transparent;
+    color: var(--text-dim);
+    padding: 4px 8px;
+    font-size: 18px;
+    line-height: 1;
+  }
+
+  .btn-icon:hover { color: var(--danger); }
+
+  .actions-row {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 8px;
+  }
+
+  /* Results */
+  .result-step {
+    background: var(--card-2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+  }
+
+  .result-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+
+  .result-model {
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .result-meta {
+    display: flex;
+    gap: 14px;
+    color: var(--text-dim);
+    font-family: 'SF Mono', Menlo, monospace;
+    font-size: 12px;
+  }
+
+  .result-meta strong { color: var(--text); }
+
+  .result-output {
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 6px;
+    padding: 12px;
+    font-size: 14px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    color: var(--text);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-dim);
+    font-size: 14px;
+  }
+
+  /* Status / toast */
+  .status-bar {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin-bottom: 14px;
+    display: none;
+  }
+
+  .status-bar.show { display: block; }
+  .status-bar.info { background: var(--accent-dim); color: var(--accent); }
+  .status-bar.error { background: rgba(255, 92, 124, 0.12); color: var(--danger); }
+  .status-bar.ok { background: rgba(58, 210, 159, 0.12); color: var(--ok); }
+
+  .spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: inline-block;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    padding: 24px;
+    color: var(--text-dim);
+    font-size: 13px;
+    border-top: 1px solid var(--border);
+    margin-top: 20px;
+  }
+
+  footer span { color: var(--accent); }
+</style>
 </head>
 <body>
   <header>
-    <h1>⚡ QwenFlow</h1>
-    <div class="status">Connected to <span id="endpoint">localhost:3000</span></div>
+    <div class="logo">
+      <div class="logo-mark">Q</div>
+      <div class="logo-text">
+        <h1>Qwen<span>Flow</span> — AI Agent Orchestration</h1>
+        <p>Compose, chain, and run Qwen models in multi-step workflows</p>
+      </div>
+    </div>
+    <span class="version-badge">v0.1.0</span>
   </header>
-  <main>
+
+  <div class="layout">
+    <!-- Sidebar: Model Library -->
     <aside class="sidebar">
-      <h3>Qwen Models</h3>
-      <div id="model-list"></div>
+      <h2>Model Library</h2>
+      <div id="model-library"></div>
     </aside>
-    <section class="canvas">
-      <h2>Workflow Builder</h2>
-      <p class="subtitle">Add steps, choose models, define prompts. Then run.</p>
-      <input class="workflow-name" id="wf-name" placeholder="Workflow name..." value="My AI Agent">
-      <div id="steps-container"></div>
-      <button class="add-step-btn" onclick="addStep()">+ Add Step</button>
-      <div class="actions">
-        <button class="btn-run" id="run-btn" onclick="runWorkflow()">▶ Run Workflow</button>
-      </div>
-    </section>
-    <aside class="results-panel">
-      <h3>Execution Results</h3>
-      <div id="results-container">
-        <div class="empty-state">
-          <div class="icon">⚡</div>
-          <p>Run a workflow to see results here</p>
+
+    <!-- Main: Workflow builder + results -->
+    <main class="main">
+      <div class="panel">
+        <div class="panel-title">Create Workflow</div>
+        <div id="status" class="status-bar"></div>
+
+        <div class="field">
+          <label for="wf-name">Workflow Name</label>
+          <input type="text" id="wf-name" placeholder="e.g. Research & Summarize Pipeline" />
+        </div>
+
+        <div id="steps-container"></div>
+
+        <button class="btn btn-ghost" id="add-step-btn">+ Add Step</button>
+
+        <div class="actions-row">
+          <button class="btn btn-primary" id="run-btn" disabled>
+            ▶ Run Workflow
+          </button>
         </div>
       </div>
-    </aside>
-  </main>
 
-  <script>
-    const API = window.location.origin;
-    let models = [];
-    let steps = [];
-    let stepCounter = 0;
-
-    async function loadModels() {
-      try {
-        const res = await fetch(`${API}/api/models`);
-        models = await res.json();
-        renderModels();
-      } catch (e) {
-        console.error('Failed to load models:', e);
-      }
-    }
-
-    function renderModels() {
-      const list = document.getElementById('model-list');
-      list.innerHTML = models.map(m => `
-        <div class="model-card" data-model="${m.id}" onclick="selectModel(this)">
-          <div class="name">${m.name}</div>
-          <div class="desc">${m.description}</div>
-          <div class="caps">${m.capabilities.map(c => `<span>${c}</span>`).join('')}</div>
+      <div class="panel">
+        <div class="panel-title">Results</div>
+        <div id="results">
+          <div class="empty-state">No results yet. Build a workflow and hit Run.</div>
         </div>
-      `).join('');
-    }
+      </div>
+    </main>
+  </div>
 
-    function selectModel(el) {
-      document.querySelectorAll('.model-card').forEach(c => c.classList.remove('selected'));
-      el.classList.add('selected');
-    }
+  <footer>
+    Built for <span>Qwen Cloud AI Hackathon</span> · Powered by QwenFlow
+  </footer>
 
-    function addStep() {
-      const id = `step-${++stepCounter}`;
-      steps.push(id);
-      const container = document.getElementById('steps-container');
-      if (steps.length > 1) {
-        container.innerHTML += `<div class="connector"></div>`;
-      }
-      container.innerHTML += `
-        <div class="step-card" id="${id}">
-          <div class="step-num">Step ${steps.length}</div>
-          <div class="step-header">
-            <select onchange="updateModel('${id}', this.value)">
-              ${models.map(m => `<option value="${m.id}">${m.name}</option>`).join('')}
-            </select>
-            <button class="remove-step" onclick="removeStep('${id}')">✕ Remove</button>
-          </div>
-          <textarea placeholder="Enter prompt for this step..." id="${id}-prompt"></textarea>
-          <div class="temp-row">
-            <label>Temperature</label>
-            <input type="range" min="0" max="2" step="0.1" value="0.7"
-              oninput="this.nextElementSibling.textContent=this.value">
-            <span class="val">0.7</span>
-          </div>
-        </div>
-      `;
-    }
+<script>
+(function () {
+  "use strict";
 
-    function removeStep(id) {
-      steps = steps.filter(s => s !== id);
-      document.getElementById(id)?.remove();
-      // Fix connector artifacts
-      document.querySelectorAll('.connector').forEach(c => c.remove());
-      renumberSteps();
-    }
+  // Static model library data (sidebar showcase)
+  const LIBRARY_MODELS = [
+    { name: "Qwen3-Max",        context: "1M tokens",   caps: ["Reasoning", "Code", "Multilingual"] },
+    { name: "Qwen3-235B-A22B",  context: "128K tokens", caps: ["MoE", "Tool-use", "Math"] },
+    { name: "Qwen3-72B",        context: "256K tokens", caps: ["Chat", "Analysis", "Vision"] },
+    { name: "Qwen3-Coder",      context: "1M tokens",   caps: ["Code-gen", "Agentic", "Repo-scale"] },
+    { name: "QwQ-32B",          context: "128K tokens", caps: ["Deep-reasoning", "Math", "Science"] },
+  ];
 
-    function renumberSteps() {
-      document.querySelectorAll('.step-card').forEach((card, i) => {
-        card.querySelector('.step-num').textContent = `Step ${i + 1}`;
-      });
-    }
+  // ---- DOM refs ----
+  const libraryEl   = document.getElementById("model-library");
+  const stepsEl     = document.getElementById("steps-container");
+  const addStepBtn  = document.getElementById("add-step-btn");
+  const runBtn      = document.getElementById("run-btn");
+  const resultsEl   = document.getElementById("results");
+  const statusEl    = document.getElementById("status");
+  const wfNameInput = document.getElementById("wf-name");
 
-    async function runWorkflow() {
-      const btn = document.getElementById('run-btn');
-      if (steps.length === 0) {
-        alert('Add at least one step');
+  let modelOptions = []; // [{ id, name }] fetched from backend
+  let stepCounter  = 0;
+
+  // ---- Status helper ----
+  function setStatus(type, msg, spinner) {
+    statusEl.className = "status-bar show " + type;
+    statusEl.innerHTML = (spinner ? '<span class="spinner"></span> ' : "") + escapeHtml(msg);
+  }
+  function clearStatus() { statusEl.className = "status-bar"; statusEl.innerHTML = ""; }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c];
+    });
+  }
+
+  // ---- Render static model library ----
+  function renderLibrary() {
+    libraryEl.innerHTML = LIBRARY_MODELS.map(function (m) {
+      const pills = m.caps.map(function (c) {
+        return '<span class="cap-pill">' + escapeHtml(c) + "</span>";
+      }).join("");
+      return (
+        '<div class="model-card">' +
+          '<div class="model-head">' +
+            '<span class="model-name">' + escapeHtml(m.name) + "</span>" +
+            '<span class="model-ctx">' + escapeHtml(m.context) + "</span>" +
+          "</div>" +
+          '<div class="model-caps">' + pills + "</div>" +
+        "</div>"
+      );
+    }).join("");
+  }
+
+  // ---- Step builder ----
+  function addStep() {
+    stepCounter += 1;
+    const id = stepCounter;
+    const wrap = document.createElement("div");
+    wrap.className = "step";
+    wrap.dataset.step = String(id);
+
+    const opts = modelOptions.length
+      ? modelOptions.map(function (m) {
+          return '<option value="' + escapeHtml(m.id) + '">' + escapeHtml(m.name || m.id) + "</option>";
+        }).join("")
+      : '<option value="">Loading models…</option>';
+
+    wrap.innerHTML =
+      '<div class="step-head">' +
+        '<div style="display:flex;align-items:center;gap:10px;">' +
+          '<span class="step-index">' + id + "</span>" +
+          '<strong style="font-size:14px;">Step ' + id + "</strong>" +
+        "</div>" +
+        '<button class="btn btn-icon" data-action="remove" title="Remove step">✕</button>' +
+      "</div>" +
+      '<div class="step-grid">' +
+        '<div>' +
+          '<label>Model</label>' +
+          '<select class="step-model">' + opts + "</select>" +
+        "</div>" +
+        '<div>' +
+          '<label>Prompt</label>' +
+          '<textarea class="step-prompt" placeholder="Enter the prompt for this step…"></textarea>' +
+        "</div>" +
+      "</div>" +
+      '<div class="temp-row">' +
+        '<label style="margin:0;min-width:110px;">Temperature</label>' +
+        '<input type="range" class="step-temp" min="0" max="2" step="0.1" value="0.7" />' +
+        '<span class="temp-value">0.7</span>' +
+      "</div>";
+
+    stepsEl.appendChild(wrap);
+    reindexSteps();
+    updateRunState();
+
+    // wire interactions
+    wrap.querySelector('[data-action="remove"]').addEventListener("click", function () {
+      wrap.remove();
+      reindexSteps();
+      updateRunState();
+    });
+
+    const tempInput  = wrap.querySelector(".step-temp");
+    const tempValue  = wrap.querySelector(".temp-value");
+    tempInput.addEventListener("input", function () {
+      tempValue.textContent = parseFloat(tempInput.value).toFixed(1);
+    });
+  }
+
+  function reindexSteps() {
+    const steps = stepsEl.querySelectorAll(".step");
+    steps.forEach(function (el, i) {
+      el.querySelector(".step-index").textContent = String(i + 1);
+      el.querySelector("strong").textContent = "Step " + (i + 1);
+    });
+    stepCounter = steps.length;
+  }
+
+  function updateRunState() {
+    const hasSteps = stepsEl.querySelectorAll(".step").length > 0;
+    runBtn.disabled = !hasSteps;
+  }
+
+  // ---- Collect workflow from DOM ----
+  function collectSteps() {
+    return Array.prototype.map.call(stepsEl.querySelectorAll(".step"), function (el) {
+      return {
+        model:       el.querySelector(".step-model").value,
+        prompt:      el.querySelector(".step-prompt").value,
+        temperature: parseFloat(el.querySelector(".step-temp").value),
+      };
+    });
+  }
+
+  // ---- Run workflow ----
+  async function runWorkflow() {
+    const name   = wfNameInput.value.trim() || "Untitled Workflow";
+    const steps  = collectSteps();
+
+    if (!steps.length) { setStatus("error", "Add at least one step."); return; }
+    for (let i = 0; i < steps.length; i++) {
+      if (!steps[i].prompt.trim()) {
+        setStatus("error", "Step " + (i + 1) + " is missing a prompt.");
         return;
       }
-
-      // Build workflow payload
-      const wfSteps = steps.map((id, i) => {
-        const card = document.getElementById(id);
-        return {
-          id: `s${i}`,
-          model: card.querySelector('select').value,
-          prompt: card.querySelector('textarea').value || `Step ${i + 1} processing`,
-          temperature: parseFloat(card.querySelector('input[type=range]').value),
-        };
-      });
-
-      const name = document.getElementById('wf-name').value || 'Untitled Workflow';
-
-      btn.disabled = true;
-      btn.textContent = '⏳ Creating workflow...';
-      btn.classList.add('running');
-
-      try {
-        // Create workflow
-        const createRes = await fetch(`${API}/api/workflows`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, description: '', steps: wfSteps }),
-        });
-        const workflow = await createRes.json();
-
-        if (!workflow.id) throw new Error('Failed to create workflow');
-
-        btn.textContent = '▶ Running...';
-
-        // Run workflow
-        const runRes = await fetch(`${API}/api/workflows/${workflow.id}/run`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({}),
-        });
-        const run = await runRes.json();
-
-        // Display results
-        renderResults(run);
-
-      } catch (e) {
-        renderResults({ status: 'failed', error: e.message, results: [] });
-      } finally {
-        btn.disabled = false;
-        btn.textContent = '▶ Run Workflow';
-        btn.classList.remove('running');
-      }
     }
 
-    function renderResults(run) {
-      const container = document.getElementById('results-container');
-      if (run.status === 'failed') {
-        container.innerHTML = `
-          <div class="result-item error">
-            <div class="r-head"><span class="r-model">Error</span><span class="r-meta">${run.status}</span></div>
-            <div class="r-content">${run.error || 'Unknown error'}</div>
-          </div>`;
-        return;
-      }
+    runBtn.disabled = true;
+    resultsEl.innerHTML = '<div class="empty-state"><span class="spinner"></span> Running workflow…</div>';
 
-      const tokens = run.results.reduce((a, r) => ({
-        prompt: a.prompt + (r.tokens?.prompt || 0),
-        completion: a.completion + (r.tokens?.completion || 0),
-      }), { prompt: 0, completion: 0 });
+    try {
+      setStatus("info", "Creating workflow…", true);
 
-      const totalTime = run.results.reduce((a, r) => a + (r.latency || 0), 0);
-
-      let html = `
-        <div class="result-item" style="border-left-color: var(--success)">
-          <div class="r-head"><span class="r-model">✅ Workflow Complete</span><span class="r-meta">${run.results.length} steps · ${totalTime}ms</span></div>
-          <div class="r-content">Tokens: ${tokens.prompt} prompt + ${tokens.completion} completion</div>
-        </div>`;
-
-      run.results.forEach((r, i) => {
-        html += `
-          <div class="result-item">
-            <div class="r-head"><span class="r-model">Step ${i + 1} — ${r.model}</span><span class="r-meta">${r.latency}ms</span></div>
-            <div class="r-content">${r.content}</div>
-          </div>`;
+      // 1) Create the workflow
+      const createRes = await fetch("/api/workflows", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: name, steps: steps }),
       });
+      if (!createRes.ok) {
+        const err = await safeJson(createRes);
+        throw new Error("Create failed: " + (err && err.error ? err.error : createRes.status));
+      }
+      const created = await createRes.json();
+      const wfId = created.id || created.workflowId || created._id;
+      if (!wfId) throw new Error("Workflow created but no id returned.");
 
-      container.innerHTML = html;
+      setStatus("info", "Workflow created. Executing steps…", true);
+
+      // 2) Run it
+      const runRes = await fetch("/api/workflows/" + encodeURIComponent(wfId) + "/run", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!runRes.ok) {
+        const err = await safeJson(runRes);
+        throw new Error("Run failed: " + (err && err.error ? err.error : runRes.status));
+      }
+      const result = await runRes.json();
+
+      setStatus("ok", "Workflow completed successfully.");
+      renderResults(result, steps);
+    } catch (e) {
+      setStatus("error", e.message || "Unknown error");
+      resultsEl.innerHTML = '<div class="empty-state" style="color:var(--danger);">' +
+                            escapeHtml(e.message || "Run failed.") + "</div>";
+    } finally {
+      updateRunState();
+    }
+  }
+
+  async function safeJson(res) {
+    try { return await res.json(); } catch (_) { return null; }
+  }
+
+  // ---- Render results ----
+  // Tolerant: handle either { steps: [...] } or { results: [...] } or a bare array.
+  function renderResults(payload, requestSteps) {
+    let items = [];
+    if (Array.isArray(payload)) items = payload;
+    else if (payload && Array.isArray(payload.steps))   items = payload.steps;
+    else if (payload && Array.isArray(payload.results)) items = payload.results;
+    else if (payload && payload.output) {
+      // single-output shape
+      items = [{ output: payload.output, tokensUsed: payload.tokensUsed, latencyMs: payload.latencyMs }];
+    } else if (payload && typeof payload === "object") {
+      // unknown shape — dump as JSON
+      resultsEl.innerHTML =
+        '<div class="result-step"><div class="result-output">' +
+        escapeHtml(JSON.stringify(payload, null, 2)) + "</div></div>";
+      return;
     }
 
-    // Init
-    loadModels();
-    addStep(); // Start with one step
-  </script>
+    if (!items.length) {
+      resultsEl.innerHTML = '<div class="empty-state">Workflow ran but produced no step output.</div>';
+      return;
+    }
+
+    resultsEl.innerHTML = items.map(function (s, i) {
+      const model   = s.model || (requestSteps[i] && requestSteps[i].model) || "—";
+      const output  = s.output != null ? s.output
+                    : (s.response != null ? s.response
+                    : (s.text != null ? s.text
+                    : (s.result != null ? s.result : JSON.stringify(s))));
+      const tokens  = (s.tokensUsed != null ? s.tokensUsed
+                    : (s.tokens != null ? s.tokens : "—"));
+      const latency = (s.latencyMs != null ? s.latencyMs
+                    : (s.latency != null ? s.latency : "—"));
+      return (
+        '<div class="result-step">' +
+          '<div class="result-head">' +
+            '<span class="result-model">Step ' + (i + 1) + " · " + escapeHtml(model) + "</span>" +
+            '<span class="result-meta">' +
+              "<span><strong>" + escapeHtml(String(tokens)) + "</strong> tokens</span>" +
+              "<span><strong>" + escapeHtml(String(latency)) + "</strong> ms</span>" +
+            "</span>" +
+          "</div>" +
+          '<div class="result-output">' + escapeHtml(String(output)) + "</div>" +
+        "</div>"
+      );
+    }).join("");
+  }
+
+  // ---- Load models from backend for the dropdowns ----
+  async function loadModels() {
+    try {
+      const res = await fetch("/api/models");
+      if (!res.ok) return;
+      const data = await res.json();
+      const arr = Array.isArray(data) ? data : (data.models || data.items || []);
+      modelOptions = arr.map(function (m) {
+        return { id: m.id || m.model || m.name, name: m.name || m.id || m.model };
+      }).filter(function (m) { return m.id; });
+
+      // backfill any existing dropdowns that showed the placeholder
+      if (modelOptions.length) {
+        stepsEl.querySelectorAll(".step-model").forEach(function (sel) {
+          if (!sel.value) {
+            sel.innerHTML = modelOptions.map(function (m) {
+              return '<option value="' + escapeHtml(m.id) + '">' + escapeHtml(m.name) + "</option>";
+            }).join("");
+          }
+        });
+      }
+    } catch (_) {
+      // dropdowns will just say "Loading models…" — non-fatal
+    }
+  }
+
+  // ---- Wire up ----
+  addStepBtn.addEventListener("click", addStep);
+  runBtn.addEventListener("click", runWorkflow);
+
+  // Init
+  renderLibrary();
+  addStep();               // start with one step
+  loadModels();
+})();
+</script>
 </body>
 </html>
