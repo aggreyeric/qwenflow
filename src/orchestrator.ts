@@ -1,5 +1,5 @@
-import { Workflow, WorkflowRun, WorkflowStep, ModelResponse } from "./types";
-import { callModel } from "./models";
+import { Workflow, WorkflowRun, WorkflowStep, ModelResponse } from "./types.js";
+import { callModel } from "./models.js";
 
 export class Orchestrator {
   private workflow: Workflow;

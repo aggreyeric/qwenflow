@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
-import { Orchestrator } from "../orchestrator";
-import { Workflow, WorkflowStep } from "../types";
+import { Orchestrator } from "../orchestrator.js";
+import { Workflow, WorkflowStep } from "../types.js";
 
 export const workflowRouter = Router();
 

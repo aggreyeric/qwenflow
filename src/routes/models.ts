@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
-import { listModels, getModelCapabilities, callModel } from "../models";
-import { ModelId } from "../types";
+import { listModels, getModelCapabilities, callModel } from "../models.js";
+import { ModelId } from "../types.js";
 
 export const modelRouter = Router();
 

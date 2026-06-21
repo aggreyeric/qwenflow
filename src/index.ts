@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
-import { workflowRouter } from "./routes/workflows";
-import { modelRouter } from "./routes/models";
+import { workflowRouter } from "./routes/workflows.js";
+import { modelRouter } from "./routes/models.js";
 
 const app = express();
 const PORT = parseInt(process.env.PORT || "3000", 10);
