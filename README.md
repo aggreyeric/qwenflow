@@ -37,6 +37,45 @@ Most agent frameworks are model-agnostic to a fault. QwenFlow goes the other way
 
 ---
 
+## 🚀 Quick Start
+
+### Prerequisites
+- Node.js 18+
+- npm or yarn
+- Optional: Qwen Cloud API key (DashScope) for real AI inference
+
+### Install & Run
+```bash
+git clone https://github.com/aggreyeric/qwenflow.git
+cd qwenflow
+npm install
+npm run build
+npm start
+```
+
+The server starts at http://localhost:3000
+
+### With Docker
+```bash
+docker compose up --build
+```
+
+### Demo (Mock Mode)
+No API key needed — the mock fallback simulates Qwen Cloud responses:
+```bash
+npm start
+# Then visit http://localhost:3000 or use the CLI:
+node dist/cli.js run --name "test" --prompt "Hello"
+```
+
+### Environment Variables
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| PORT | No | 3000 | Server port |
+| DASHSCOPE_API_KEY | No | — | Qwen Cloud/DashScope API key |
+
+---
+
 ## 🏗️ Architecture
 
 QwenFlow is a pipeline-oriented orchestrator. A **workflow** is a DAG of **steps**; each step names a Qwen model, a prompt template, and an optional retry/fallback policy. Execution flows through five layers:
