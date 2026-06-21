@@ -8,6 +8,7 @@ const PORT = parseInt(process.env.PORT || "3000", 10);
 
 app.use(cors());
 app.use(express.json());
+app.use(express.static("public"));
 
 app.get("/health", (_req, res) => {
   res.json({ status: "ok", version: "0.1.0", uptime: process.uptime() });
