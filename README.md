@@ -1,6 +1,6 @@
 # QwenFlow 🌊
 
-![TypeScript](https://img.shields.io/badge/language-TypeScript-3178C6) ![Qwen Cloud](https://img.shields.io/badge/platform-Qwen%20Cloud-blue) ![Gemini](https://img.shields.io/badge/models-Qwen%20%2B%20Gemini-4285F4) ![Express](https://img.shields.io/badge/framework-Express-000000) ![Tests](https://img.shields.io/badge/tests-65%20passed-success) ![Docker](https://img.shields.io/badge/Docker-ready-2496ED) ![License](https://img.shields.io/badge/license-MIT-green) ![CI](https://img.shields.io/badge/CI-passing-brightgreen)
+![TypeScript](https://img.shields.io/badge/language-TypeScript-3178C6) ![Qwen Cloud](https://img.shields.io/badge/platform-Qwen%20Cloud-blue) ![Gemini](https://img.shields.io/badge/models-Qwen%20%2B%20Gemini-4285F4) ![Express](https://img.shields.io/badge/framework-Express-000000) ![Tests](https://img.shields.io/badge/tests-78%20passed-success) ![Docker](https://img.shields.io/badge/Docker-ready-2496ED) ![License](https://img.shields.io/badge/license-MIT-green) ![CI](https://img.shields.io/badge/CI-passing-brightgreen)
 
 ## 📸 Screenshot
 
