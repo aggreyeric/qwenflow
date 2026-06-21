@@ -12,6 +12,11 @@ export interface ChatResponse {
   model: string;
 }
 
+export interface ValidateResult {
+  valid: boolean;
+  error?: string;
+}
+
 export class QwenCloudClient {
   private apiKey: string;
   private baseUrl: string;
