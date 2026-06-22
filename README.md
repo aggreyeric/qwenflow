@@ -102,6 +102,26 @@ node dist/cli.js run --name "test" --prompt "Hello"
 
 ---
 
+## 🤖 Slack Integration
+
+QwenFlow includes a Slack bot that lets teams run workflows from chat.
+
+### Setup
+1. Create a Slack App at https://api.slack.com/apps
+2. Enable Slash Commands, add `/qwenflow`
+3. Set env vars: `SLACK_BOT_TOKEN`, `SLACK_SIGNING_SECRET`, `SLACK_APP_TOKEN`
+4. Start QwenFlow — Slack auto-initializes when token is present
+
+### Commands
+| Command | Description |
+|---------|-------------|
+| `/qwenflow run <name>` | Run a workflow |
+| `/qwenflow status <name>` | Check workflow progress |
+| `/qwenflow models` | List available Qwen models |
+| `/qwenflow list` | List all registered workflows |
+
+---
+
 ## 🏗️ Architecture
 
 QwenFlow is a pipeline-oriented orchestrator. A **workflow** is a DAG of **steps**; each step names a Qwen model, a prompt template, and an optional retry/fallback policy. Execution flows through five layers:
