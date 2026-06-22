@@ -35,3 +35,8 @@ https://github.com/aggreyeric/qwenflow
 
 **Built With**
 typescript, slack-bolt, qwen, gemini, express, nodejs, vitest
+
+## Screenshots
+- `docs/screenshot-ui.png` — QwenFlow dashboard
+- `docs/screenshot-gemini-ui.png` — Gemini model selector
+- `docs/screenshot-slack-ui.png` — QwenFlow web UI (for Slack integration context)
