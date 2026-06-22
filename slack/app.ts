@@ -7,9 +7,9 @@
  *   /qwenflow models           — List available models
  */
 import { App } from "@slack/bolt";
-import { getAllWorkflows, getWorkflow } from "../store.js";
-import { Orchestrator } from "../orchestrator.js";
-import { QWEN_MODELS } from "../types.js";
+import { getAllWorkflows, getWorkflow } from "../src/store.js";
+import { Orchestrator } from "../src/orchestrator.js";
+import { QWEN_MODELS } from "../src/types.js";
 
 export function registerSlackCommands(slackApp: App): void {
   slackApp.command("/qwenflow", async ({ command, ack, respond }) => {
