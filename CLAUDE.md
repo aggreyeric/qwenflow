@@ -14,7 +14,7 @@ QwenFlow is an AI agent orchestration framework for the Qwen Cloud hackathon. It
 - `npm install` — install deps
 - `npm run dev` — dev server with tsx watch (port 3000)
 - `npm run build` (`npx tsc`) — TypeScript compile to dist/
-- `npm test` — vitest run (78 test cases across 8 suites)
+- `npm test` — vitest run (94 test cases across 10 suites)
 - `npm run test:ci` — vitest run with verbose reporter for CI output
 - `npm start` (`node dist/index.js`) — production server (port 3000)
 
@@ -60,7 +60,7 @@ QwenFlow exposes its orchestration capabilities through a Slack app targeting th
 - GET /api/models — list available models
 
 ## Testing
-Tests in tests/ directory (8 suites: api, cli, gemini, orchestrator, qwencloud, routes, schemas, types). Run with `npx vitest run` or `npm test`; use `npm run test:ci` for verbose CI output. No live Qwen Cloud or Gemini calls — the model layer is mocked in CI.
+Tests in tests/ directory (10 suites: api, cli, gemini, orchestrator, qwencloud, routes, schemas, types, slack, extras). Run with `npx vitest run` or `npm test`; use `npm run test:ci` for verbose CI output. No live Qwen Cloud or Gemini calls — the model layer is mocked in CI.
 
 ## Environment
 - PORT — server port (default 3000)
