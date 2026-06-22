@@ -31,6 +31,27 @@ QwenFlow is an AI agent orchestration framework for the Qwen Cloud hackathon. It
 - src/cli.ts — CLI for local usage
 - public/index.html — dark-theme single-page UI
 
+## Slack Integration
+QwenFlow exposes its orchestration capabilities through a Slack app targeting the **Slack Agent Builder ($42K prize)** hackathon track. The app runs a Bolt-for-JS server alongside the Express API, letting users trigger workflows and query status directly from Slack via slash commands.
+
+### Slash Commands
+- `/qwenflow run <prompt>` — execute a workflow from a natural-language prompt
+- `/qwenflow status [run-id]` — show run status (latest, or a specific run ID)
+- `/qwenflow models` — list available Qwen Cloud + Gemini models
+
+### Files
+- src/slack.ts — Bolt `App` factory; reads tokens from env, wires command handlers, exports the configured app instance
+- src/slack-commands.ts — slash command handlers (`run`, `status`, `models`); calls into the orchestrator/model registry
+- src/slack-start.ts — entry point that starts the Bolt receiver (Socket Mode) and optionally boots the Express server
+
+### Tests
+- tests/slack.test.ts — 10 tests covering command parsing, handler responses, token validation, and error cases (mocked Bolt app)
+
+### Environment Variables
+- SLACK_BOT_TOKEN — `xoxb-...` bot OAuth token (required)
+- SLACK_SIGNING_SECRET — signing secret for request verification (required)
+- SLACK_APP_TOKEN — `xapp-...` token for Socket Mode (required)
+
 ## API Endpoints
 - GET /health — health check
 - POST /api/workflows — create workflow
