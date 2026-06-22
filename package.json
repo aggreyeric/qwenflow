@@ -32,9 +32,11 @@
   "license": "MIT",
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
+    "@slack/bolt": "^4.0.0",
     "cors": "^2.8.5",
     "express": "^4.19.2",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "@slack/bolt": "^3.22.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
