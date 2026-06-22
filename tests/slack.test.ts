@@ -18,7 +18,7 @@ vi.mock("@slack/bolt", () => ({
 }));
 
 import type { App } from "@slack/bolt";
-import { registerSlackCommands } from "../slack/app";
+import { registerSlackCommands } from "../src/slack-commands";
 import { getAllWorkflows, setWorkflow } from "../src/store";
 import { QWEN_MODELS, type Workflow } from "../src/types";
 
