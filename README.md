@@ -16,6 +16,19 @@ Most agent frameworks are model-agnostic to a fault. QwenFlow goes the other way
 
 ---
 
+## 🏆 Hackathon Submissions
+
+| Hackathon | Prize | Deadline | Status |
+|-----------|-------|----------|--------|
+| [UiPath AgentHack](https://uipath-agenthack.devpost.com/) | $50,000 | Jun 29, 2026 | 📝 Draft ready |
+| [Qwen Cloud Devpost](https://qwencloud-hackathon.devpost.com/) | $45,000 | Jul 9, 2026 | 📝 Draft ready |
+| [Slack Agent Builder](https://slackhack.devpost.com/) | $42,000 | Jul 13, 2026 | 📝 Draft ready |
+| [Gemini XPRIZE](https://xprize.devpost.com/) | $2,000,000 | Aug 17, 2026 | 📝 Draft ready |
+
+**Total: $2.137M in prize pools**
+
+---
+
 ## 💡 Why QwenFlow?
 
 - **Qwen Cloud is Alibaba's serverless AI platform but lacks a developer-friendly orchestration layer.** You get powerful raw model endpoints, but no way to compose them into pipelines.
