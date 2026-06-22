@@ -1,7 +1,6 @@
 # QwenFlow — UiPath AgentHack Submission
 
 > **Status: DRAFT — not submitted anywhere. Awaits Eric's approval.**
-> **Prize pool: $50K · Deadline: Jun 29, 2026**
 
 ---
 
@@ -14,107 +13,63 @@ QwenFlow — Multi-Model AI Agent Orchestrator
 ## One-Liner
 
 ```
-QwenFlow lets you build AI agents that route tasks to the best model, integrate
-with enterprise tools (Slack), and maintain audit trails — all from a single
-workflow engine.
+Route, execute, and monitor AI tasks across Qwen and Gemini with a unified
+workflow engine — built and continuously verified by coding agents.
 ```
 
 ## Description
 
-UiPath proved that deterministic workflows could run an enterprise. The next
-frontier is **agentic**: workflows where each step is a model call, where the
-"bot" picks the right brain for the job, and where every decision leaves a
-trace an auditor can replay. QwenFlow is that engine.
+QwenFlow is an AI agent orchestration platform that turns multiple large language models into composable, reliable building blocks. Instead of hand-writing one-off API glue for every prompt, you declare a workflow — a directed graph of model steps — and QwenFlow schedules, executes, retries, and observes the whole run.
 
-QwenFlow is a workflow engine for AI agents. You declare an agent as a
-directed graph of model steps — in plain JSON, via REST, or from a Slack
-channel — and QwenFlow takes over execution: it parses the graph, resolves
-cross-step variables like `${steps.classify.output}`, runs independent steps
-in parallel, and aggregates every step's output, token usage, latency, and
-cost into a single replayable run record.
+It fits the "building AI agents using coding agents" theme directly: QwenFlow is both *an agent platform* and *a product of coding agents*. Internally, coding agents generate workflow scaffolds, wire new model adapters (Qwen3 / Qwen-VL / Qwen-Audio via DashScope, plus Gemini 2.0 Flash / 1.5 Pro), and — crucially — run the automated quality gate that protects every change. Every commit passes a 94-case, 10-suite test suite that exercises the scheduler, retry/fallback executor, variable resolution, response aggregator, REST API, and Slack command layer, all in deterministic mock mode. The coding agent loop is: generate → typecheck → test → deploy. That loop is what makes autonomous, multi-model agent orchestration safe enough to ship.
 
-The core differentiator is **multi-model agent orchestration**. A single
-agent does not have to commit to one model. QwenFlow's Model Router knows
-the difference between a text step (Qwen3), a vision step (Qwen-VL), and an
-audio step (Qwen-Audio), serializes the right payload for each, and can fall
-back to Gemini per step when it improves a result. So one pipeline can route
-a classification task to Qwen3, a document-vision task to Qwen-VL, and a
-synthesis task back to Qwen3 — concurrently where the DAG allows, sequenced
-where dependencies demand. The orchestrator fans work across whatever is
-configured; models are pluggable, agents are not.
+The platform's Model Router dispatches each step to the right provider, so a single pipeline can fan out — Qwen3 for reasoning, Qwen-VL for vision, Gemini for fast multimodal calls — with cross-provider fallback when a step exceeds budget or rate limits. Teams trigger and monitor these runs from Slack via `/qwenflow` slash commands (`run`, `status`, `models`), giving a human-in-the-loop surface over fully autonomous execution.
 
-That orchestration surface extends to **enterprise workflow automation**
-through a first-class Slack integration. The same shared workflow store that
-the web UI and REST API hit is exposed in Slack via a single `/qwenflow`
-slash command — run a workflow, poll live status on long-running jobs, and
-list available models, all inline in any channel where the work is already
-being discussed. Three-second acks and async responses keep Slack responsive
-on runs that take minutes. There is no second data silo: one source of
-truth, surfaced where the team works.
+In short: QwenFlow shows a complete coding-agent-powered pipeline — an agent platform, built by agents, tested by agents, and operated through chat — which is exactly the autonomous, multi-model future UiPath AgentHack is asking builders to demonstrate.
 
-Underneath, every run is observable. Each step records its inputs, outputs,
-model, token usage, and latency into an audit trace that can be inspected
-and replayed — the kind of trail an enterprise automation platform is
-measured on. Put a QwenFlow agent behind a Slack command and you get an AI
-worker that is multi-model, integrated, and auditable by default.
+## What Makes It Unique
 
-For judges: `npm install`, `export DASHSCOPE_API_KEY=...`, `npm run dev`,
-open http://localhost:3000. `bash scripts/demo.sh` exercises the full HTTP
-API end to end. `npm run start:slack` brings up the Slack app.
-`npm test` is green (94/94, 0 failures). No secrets beyond a single Qwen
-API key are required to evaluate.
-
-## Why It Fits UiPath AgentHack
-
-- **Agentic by design** — agents are DAGs of model steps, not single prompts;
-  the engine handles orchestration, parallelism, and dependency resolution
-- **Model routing as agent capability** — each step picks the best model
-  (text / vision / audio / Gemini fallback) the way a UiPath activity picks
-  the right tool
-- **Enterprise integration** — Slack Bolt integration surfaces agents where
-  teams already work, with a shared store across web, API, and chat
-- **Audit trails** — every run records inputs, outputs, tokens, and latency
-  into a replayable trace for governance and observability
-
-## Key Features
-
-- **Agent orchestration** — multi-step, multi-model workflow execution with
-  parallel branches and variable passing between steps
-- **Multi-model routing** — Qwen (Qwen3 / Qwen-VL / Qwen-Audio) + optional
-  Gemini fallback, selected per step
-- **Enterprise workflow automation** — Slack `/qwenflow` slash command for
-  run / status / models, sharing one store with the REST API and web UI
-- **Audit trails** — per-step output, token usage, latency, and cost
-  aggregated into a replayable run record
-- **REST API + CLI** — drive agents via HTTP or `npx qwenflow run` headlessly
-- **Docker** — `docker compose up`, zero external dependencies
+- **Multi-model routing** — Qwen (Qwen3 / Qwen-VL / Qwen-Audio) and Gemini (2.0 Flash / 1.5 Pro) in one workflow, with per-step fallback that can cross providers
+- **Built and gated by coding agents** — generate → typecheck → test → deploy loop with a real, green quality gate
+- **Slack-native operation** — `/qwenflow run | status | models` slash commands, Socket Mode, human-in-the-loop over autonomous runs
+- **Fully tested** — 94 tests across 10 suites, all green in deterministic mock mode
+- **Zero-config** — `docker compose up`, no external deps; optional keys fall back to mock responses
 
 ## Tech Stack
 
 ```
-TypeScript, Qwen API (Qwen3 / Qwen-VL / Qwen-Audio),
-Gemini API, Slack Bolt, Express, Zod, Vitest
+TypeScript, Express, Zod, Vitest, Qwen Cloud API (DashScope), Google Gemini API,
+@slack/bolt (Socket Mode), Docker
 ```
 
 ## Test Results
 
 ```
-94/94 passing across 10 suites (agent orchestration, multi-model routing,
-Slack integration, shared store, REST API, Qwen client, DAG validation,
-config, runner, end-to-end) — 0 failures, offline-deterministic.
+94/94 passing across 10 suites (api, cli, gemini, orchestrator, qwencloud,
+routes, schemas, slack, store, types) — all green, deterministic mock mode,
+no live model calls in CI.
 ```
 
-## Screenshot
+## Screenshots
 
 ```
-docs/screenshot-ui.png
+docs/screenshot-slack-ui.png   — /qwenflow slash-command interaction in Slack
+docs/screenshot-ui.png         — dark-theme workflow editor
 ```
 
-## Links
+## Demo Link
 
-- **GitHub:** https://github.com/aggreyeric/qwenflow
-- **UiPath AgentHack:** https://agenthack.uipath.com/
+```
+https://github.com/aggreyeric/qwenflow
+```
+
+## Hackathon
+
+```
+UiPath AgentHack — $50K — deadline Jun 29
+Theme: "Building AI agents using coding agents"
+```
 
 ---
 
-_Prepared by hack_2. NOT submitted. Awaits operator (Eric) approval._
+_Notes for Eric: this draft describes Qwen + Gemini routing, which is what the code actually supports today (a route test even rejects `claude-3`). If you want the copy to claim Claude too, say the word and I'll add a Claude/Anthropic adapter so the claim is true before we submit. — hack_1_
