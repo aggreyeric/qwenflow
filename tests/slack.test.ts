@@ -17,6 +17,18 @@ vi.mock("@slack/bolt", () => ({
   ExpressReceiver: vi.fn(),
 }));
 
+// Mock QwenCloudClient so Orchestrator.run() completes without real API calls.
+vi.mock("../src/qwen.js", () => ({
+  QwenCloudClient: vi.fn().mockImplementation(() => ({
+    callModel: vi.fn().mockResolvedValue({
+      content: "mocked output",
+      model: "qwen3-4b",
+      tokens: { input: 10, output: 20, total: 30 },
+      latencyMs: 150,
+    }),
+  })),
+}));
+
 import type { App } from "@slack/bolt";
 import { registerSlackCommands } from "../src/slack-commands";
 import { getAllWorkflows, setWorkflow } from "../src/store";
@@ -139,5 +151,95 @@ describe("Slack /qwenflow integration", () => {
     expect(msg).toContain("/qwenflow run");
     expect(msg).toContain("/qwenflow status");
     expect(msg).toContain("/qwenflow models");
+  });
+
+  it("/qwenflow run executes workflow and returns summary", async () => {
+    const wf: Workflow = {
+      id: "wf-run-test",
+      name: "Run Test Flow",
+      description: "a workflow to run",
+      steps: [
+        { id: "s1", model: "qwen3-4b", prompt: "Say hello" },
+      ],
+      edges: [],
+      createdAt: new Date(),
+      status: "ready",
+    };
+    setWorkflow(wf.id, wf);
+
+    const { respond } = await runCommand(getHandler(), "run wf-run-test");
+
+    expect(respond).toHaveBeenCalledTimes(2); // ack + final result
+    const msg = respond.mock.calls[1][0] as string;
+    expect(msg).toContain("complete");
+    expect(msg).toContain("Run Test Flow");
+  });
+
+  it("/qwenflow status with specific id returns workflow details", async () => {
+    const wf: Workflow = {
+      id: "wf-status-id",
+      name: "Specific Status Flow",
+      description: "test",
+      steps: [
+        { id: "s1", model: "qwen3-4b", prompt: "test" },
+        { id: "s2", model: "qwen3-8b", prompt: "test2" },
+        { id: "s3", model: "qwen-vl-max", prompt: "test3" },
+      ],
+      edges: [],
+      createdAt: new Date(),
+      status: "ready",
+    };
+    setWorkflow(wf.id, wf);
+
+    const { respond } = await runCommand(getHandler(), "status wf-status-id");
+
+    expect(respond).toHaveBeenCalledTimes(1);
+    const msg = respond.mock.calls[0][0] as string;
+    expect(msg).toContain("Specific Status Flow");
+    expect(msg).toContain("wf-status-id");
+    expect(msg).toContain("Steps: 3");
+  });
+
+  it("/qwenflow run with missing arg returns usage error", async () => {
+    const { respond } = await runCommand(getHandler(), "run");
+
+    expect(respond).toHaveBeenCalledTimes(1);
+    const msg = respond.mock.calls[0][0] as string;
+    expect(msg).toContain("Usage");
+    expect(msg).toContain("/qwenflow run");
+  });
+
+  it("/qwenflow status with specific id returns workflow details", async () => {
+    const wf: Workflow = {
+      id: "wf-specific",
+      name: "Specific Flow",
+      description: "test",
+      steps: [{ id: "s1", model: "qwen3-4b", prompt: "test" }],
+      edges: [],
+      createdAt: new Date(),
+      status: "ready",
+    };
+    setWorkflow(wf.id, wf);
+
+    const { respond } = await runCommand(getHandler(), "status wf-specific");
+
+    expect(respond).toHaveBeenCalledTimes(1);
+    const msg = respond.mock.calls[0][0] as string;
+    expect(msg).toContain("Specific Flow");
+    expect(msg).toContain("wf-specific");
+    expect(msg).toContain("Steps: 1");
+  });
+
+  it("/qwenflow unknown subcommand shows help", async () => {
+    const { respond } = await runCommand(getHandler(), "foobar");
+
+    expect(respond).toHaveBeenCalledTimes(1);
+    const msg = respond.mock.calls[0][0] as string;
+    expect(msg).toContain("QwenFlow Slack Commands");
+  });
+
+  it("getAllWorkflows().clear() resets between tests", () => {
+    // Verify store isolation works
+    expect(getAllWorkflows().size).toBe(0);
   });
 });
