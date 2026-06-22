@@ -51,6 +51,26 @@ QwenFlow is the easiest way to build multi-step AI agent pipelines — a beautif
 
 ---
 
+## 💬 Slack Integration
+
+QwenFlow integrates with Slack via `/qwenflow` slash commands:
+
+| Command | Description |
+|---------|-------------|
+| `/qwenflow run <id>` | Run a workflow, get result in thread |
+| `/qwenflow status [id]` | List all workflows or check one |
+| `/qwenflow models` | Show available AI models |
+
+Setup:
+1. Create a Slack App at api.slack.com/apps
+2. Enable slash commands, add `/qwenflow`
+3. Set env vars: `SLACK_BOT_TOKEN`, `SLACK_SIGNING_SECRET`, `SLACK_APP_TOKEN`
+4. The integration uses Socket Mode — no public URL needed
+
+Built for the [Slack Agent Builder](https://devpost.com/slack-agent-builder) hackathon ($42K).
+
+---
+
 ## 🚀 Quick Start
 
 ### Prerequisites
