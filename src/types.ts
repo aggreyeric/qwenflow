@@ -17,6 +17,10 @@ export interface WorkflowStep {
   prompt: string;
   temperature?: number;
   maxTokens?: number;
+  /** Number of retries after the first attempt (exponential backoff). */
+  retryCount?: number;
+  /** Model to fall back to if every attempt on `model` fails. */
+  fallbackModel?: ModelId;
 }
 
 export interface WorkflowEdge {

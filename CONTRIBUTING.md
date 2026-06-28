@@ -48,6 +48,40 @@ npm run dev
 
 ---
 
+## Project structure
+
+QwenFlow is a small, deliberate codebase — most of it maps 1:1 to the five
+orchestration layers described in [ARCHITECTURE.md](./ARCHITECTURE.md).
+
+```
+src/
+├── index.ts            # Express app + server bootstrap; mounts /api routers + /health
+├── orchestrator.ts     # Core: DAG execution — resolves ${steps.*}/${inputs.*}, parallel waves, retry+fallback
+├── models.ts           # Model Router — callModel() dispatches qwen*→DashScope, gemini*→Gemini; MODEL_REGISTRY
+├── qwencloud.ts        # Qwen Cloud / DashScope client (text / vision / audio); mock fallback when no key
+├── gemini.ts           # Google AI Studio client; mock fallback when no key
+├── schemas.ts          # Zod validation schemas (ModelIdSchema, WorkflowStepSchema, CreateWorkflowSchema, …)
+├── store.ts            # In-memory workflow store (CRUD); shared single source of truth for web UI + Slack
+├── types.ts            # TypeScript types — ModelId union, Workflow, WorkflowStep, ModelResponse
+├── cli.ts              # `qwenflow` CLI — run workflows from the shell
+├── slack.ts            # Slack /qwenflow slash-command app
+├── slack-commands.ts   # Command handlers for the Slack bot
+├── slack-start.ts      # Boots the HTTP server + conditionally imports the Slack app (no-op without token)
+└── routes/
+    ├── models.ts       # GET /api/models — list available models
+    └── workflows.ts    # /api/workflows — CRUD + run, Zod-validated
+tests/                  # 103 Vitest specs — one per module (orchestrator, gemini, routes, store, …)
+workflows/              # Example workflow JSON (DAG definitions)
+```
+
+**Mental model:** `orchestrator.ts` is model-agnostic — it only knows about
+steps and `${...}` references. Anything vendor-specific (endpoint URLs, SDK
+calls, mock behaviour) lives in the router + clients (`models.ts`,
+`qwencloud.ts`, `gemini.ts`). When in doubt about where a change belongs, keep
+the orchestrator free of vendor knowledge.
+
+---
+
 ## Running the tests
 
 Tests are written with [Vitest](https://vitest.dev/). Before you open a PR,
@@ -106,6 +140,10 @@ skip `npm run typecheck` locally while iterating.
 
   The compiled output in `dist/` is `.js`, so this keeps source and build
   paths aligned.
+- **Semicolons & formatting.** The codebase uses semicolons and double quotes
+  for strings. There is no Prettier/ESLint config checked in yet — when you
+  edit a file, **match the surrounding style** (semicolons, 2-space indent,
+  double quotes). Don't introduce a no-semicolon style mid-file.
 - **Type-only imports.** Use `import type { … }` for types that don't exist at
   runtime (e.g. `import type { ModelId } from "./types.js"`). The repo has
   `verbatimModuleSyntax: false`, so it's not strictly enforced, but mixing
@@ -120,9 +158,77 @@ skip `npm run typecheck` locally while iterating.
 
 ## Extending QwenFlow
 
-Three small integrations come up again and again: adding a new LLM provider,
-registering a new model, and exposing a new API route. Each is mechanical once
-you know the layout, so they're documented end-to-end below.
+Four extensions come up again and again: adding a **workflow step** (the core
+DAG primitive), adding a new **LLM provider**, registering a new **model**, and
+exposing a new **API route**. Each is mechanical once you know the layout, so
+they're documented end-to-end below, roughly in order of how likely you are to
+need them.
+
+### Adding a new workflow step (how the DAG works)
+
+A **workflow** is a directed acyclic graph (DAG) of **steps**. You almost never
+wire dependencies by hand — the orchestrator derives them from the `${...}`
+references in each step's prompt and runs independent steps in **parallel
+waves**. A step that references `${steps.analyze.output}` waits for `analyze`
+to finish; a step with no references fires immediately. This is the core
+abstraction of QwenFlow, so it's worth understanding before touching code.
+
+**Step 1 — Declare the step in the workflow JSON**
+
+Each step has a unique `id`, a `model` (a `ModelId` from `src/types.ts`), a
+`prompt`, and an optional `retry` / `fallback` policy:
+
+```json
+{
+  "id": "refine",
+  "model": "qwen3-72b-instruct",
+  "prompt": "Polish this into one polished paragraph:\n${steps.draft.output}",
+  "retry": { "maxAttempts": 3, "backoffMs": 500, "factor": 2 },
+  "fallback": "qwen3-32b-instruct"
+}
+```
+
+**Step 2 — Express dependencies with `${...}` references**
+
+These references *are* your dependency edges:
+
+- `${steps.<id>.output}` — the textual output of a prior step (creates an edge:
+  this step waits for `<id>`).
+- `${inputs.<key>}` — a raw workflow input (no edge; available from the start).
+
+The orchestrator topologically sorts on the `${steps.*}` refs and runs every
+currently-runnable step concurrently, one wave at a time. Steps that share no
+references execute in parallel; a step only fires once every step it references
+has produced output.
+
+**Step 3 — Pick `model` + optional `fallback`**
+
+Choose from `ModelId` (see `src/types.ts`). If every retry of the primary
+`model` fails, the executor transparently re-runs the step on `fallback`
+(which may even cross providers — e.g. a `gemini-*` step falling back to a
+`qwen*` model).
+
+**Step 4 — Validate with Zod**
+
+Step shape is enforced by `WorkflowStepSchema` in `src/schemas.ts` (the
+20-step cap and 200-char name limit live there too). If you're adding a new
+*kind* of step field, extend that schema first — `tests/schemas.test.ts` will
+tell you immediately if acceptance/rejection boundaries drift.
+
+**Step 5 — Test it**
+
+Adding a step is normally a workflow-JSON change with **no new code**. But if
+you change how the DAG is scheduled — a new step *type*, a new retry policy
+field, or a new `${...}` reference kind — extend `tests/orchestrator.test.ts`.
+That suite already covers parallel waves, sequential dependencies,
+`${steps.*}` / `${inputs.*}` resolution, cycle detection, dangling-reference
+safety, exponential-backoff retry, and model fallback.
+
+> **Where does my change belong?** New step *scheduling* behaviour goes in
+> `src/orchestrator.ts` (keep it model-agnostic). New model *reachability*
+> goes in the Model Router / clients (see [Adding a new LLM provider](#adding-a-new-llm-provider-gemini-as-the-worked-example)
+> below). The two layers are deliberately separate so you can swap either
+> without touching the other.
 
 ### Adding a new LLM provider (Gemini as the worked example)
 

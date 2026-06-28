@@ -79,7 +79,7 @@ echo ""
 echo "Creating workflow: 'Demo Workflow' (qwen3-8b -> qwen3-4b) ..."
 CREATE_RES=$(curl -sf -X POST "${BASE_URL}/api/workflows" \
   -H "Content-Type: application/json" \
-  -d '{"name":"Demo Workflow","steps":[{"id":"s1","model":"qwen3-8b","prompt":"Analyze the market sentiment for Bitcoin today"},{"id":"s2","model":"qwen3-4b","prompt":"Summarize the analysis in one sentence"}]}')
+  -d '{"name":"Demo Workflow","steps":[{"id":"s1","model":"qwen3-8b","prompt":"Analyze the market sentiment for Bitcoin today"},{"id":"s2","model":"qwen3-4b","prompt":"Summarize this analysis in one sentence:\n${steps.s1.output}"}]}')
 
 if [[ -z "${CREATE_RES}" ]]; then
   echo "ERROR: failed to create workflow."

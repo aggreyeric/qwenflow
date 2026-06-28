@@ -2,6 +2,7 @@ import { Router, Request, Response } from "express";
 import { Orchestrator } from "../orchestrator.js";
 import { Workflow, WorkflowStep } from "../types.js";
 import { getAllWorkflows, getWorkflow, setWorkflow } from "../store.js";
+import { RunWorkflowSchema } from "../schemas.js";
 
 export const workflowRouter = Router();
 
@@ -21,6 +22,8 @@ workflowRouter.post("/", (req: Request, res: Response) => {
       prompt: s.prompt || "",
       temperature: s.temperature ?? 0.7,
       maxTokens: s.maxTokens ?? 1024,
+      retryCount: s.retryCount,
+      fallbackModel: s.fallbackModel,
     })),
     edges: [],
     createdAt: new Date(),
@@ -40,7 +43,10 @@ workflowRouter.post("/:id/run", async (req: Request, res: Response) => {
     res.status(404).json({ error: "Workflow not found" });
     return;
   }
-  const orchestrator = new Orchestrator(workflow);
+  // Surface `${inputs.<key>}` values from the request body, validated by Zod.
+  const parsed = RunWorkflowSchema.safeParse(req.body ?? {});
+  const inputs = parsed.success ? parsed.data.inputs ?? {} : {};
+  const orchestrator = new Orchestrator(workflow, { inputs });
   const run = await orchestrator.run();
   res.json(run);
 });

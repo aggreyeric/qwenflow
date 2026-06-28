@@ -1,6 +1,6 @@
 # QwenFlow 🌊
 
-![TypeScript](https://img.shields.io/badge/language-TypeScript-3178C6) ![Qwen Cloud](https://img.shields.io/badge/platform-Qwen%20Cloud-blue) ![Gemini](https://img.shields.io/badge/models-Qwen%20%2B%20Gemini-4285F4) ![Express](https://img.shields.io/badge/framework-Express-000000) ![Tests](https://img.shields.io/badge/tests-94%20passed-success) ![Docker](https://img.shields.io/badge/Docker-ready-2496ED) ![License](https://img.shields.io/badge/license-MIT-green) ![CI](https://img.shields.io/badge/CI-passing-brightgreen)
+![TypeScript](https://img.shields.io/badge/language-TypeScript-3178C6) ![Qwen Cloud](https://img.shields.io/badge/platform-Qwen%20Cloud-blue) ![Gemini](https://img.shields.io/badge/models-Qwen%20%2B%20Gemini-4285F4) ![Express](https://img.shields.io/badge/framework-Express-000000) ![Tests](https://img.shields.io/badge/tests-103%20passing-brightgreen) ![Docker](https://img.shields.io/badge/Docker-ready-2496ED) ![License](https://img.shields.io/badge/license-MIT-green) [![CI](https://github.com/aggreyeric/qwenflow/actions/workflows/ci.yml/badge.svg)](https://github.com/aggreyeric/qwenflow/actions/workflows/ci.yml)
 
 ## 📸 Screenshot
 
@@ -74,11 +74,24 @@ QwenFlow integrates with Slack via `/qwenflow` slash commands:
 | `/qwenflow status [id]` | List all workflows or check one |
 | `/qwenflow models` | Show available AI models |
 
-Setup:
-1. Create a Slack App at api.slack.com/apps
-2. Enable slash commands, add `/qwenflow`
-3. Set env vars: `SLACK_BOT_TOKEN`, `SLACK_SIGNING_SECRET`, `SLACK_APP_TOKEN`
-4. The integration uses Socket Mode — no public URL needed
+### Deploying the Slack Bot
+
+**Prerequisites:**
+1. Create a Slack App at <https://api.slack.com/apps>
+2. Enable **Socket Mode** (no public URL needed for dev/local runs)
+3. Add a **slash command**: `/qwenflow`
+4. Grant scopes: `commands`, `chat:write`, `app_mentions`
+5. Set env vars (see table below): `SLACK_BOT_TOKEN`, `SLACK_SIGNING_SECRET`, `SLACK_APP_TOKEN`
+
+**Build & run:**
+```bash
+npm run build          # compile TypeScript -> dist/
+npm run start:slack    # node dist/slack-start.js  (HTTP server + Slack bot)
+```
+
+Entry point: [`src/slack-start.ts`](src/slack-start.ts) — boots the QwenFlow HTTP orchestrator on `PORT` (default 3000) and, if `SLACK_BOT_TOKEN` is set, dynamically imports the Slack app, registers the `/qwenflow` commands, and starts via Socket Mode. If the token is absent the Slack layer is a no-op, so the server runs cleanly without it.
+
+> The integration is **additive**: it calls the same `Orchestrator` and shared `store.ts` as the web UI — one source of truth, two surfaces.
 
 Built for the [Slack Agent Builder](https://devpost.com/slack-agent-builder) hackathon ($42K).
 
@@ -139,6 +152,27 @@ node dist/cli.js run --name "test" --prompt "Hello"
 ---
 
 ## 🏗️ Architecture
+
+```mermaid
+flowchart TB
+    WF["Workflow JSON<br/>(DAG of steps)"] --> ORC
+    UI["Visual Builder<br/>dark drag-drop canvas"] -.serialize.-> WF
+    SLACK["Slack /qwenflow<br/>slash commands"] --> ORC
+
+    subgraph Core["QwenFlow Core"]
+        ORC["Orchestrator<br/>schedule + resolve vars"]
+        EXEC["Step Executor<br/>retry + fallback"]
+        ROUTER["Model Router<br/>endpoint + payload mux"]
+        AGG["Response Aggregator<br/>outputs · tokens · cost · trace"]
+    end
+
+    ORC --> EXEC --> ROUTER
+    ROUTER -->|"qwen* models"| QWEN[("Qwen Cloud API<br/>DashScope<br/>Qwen3 / VL / Audio")]
+    ROUTER -->|"gemini* models"| GEM[("Google AI Studio<br/>Gemini 2.0 Flash / 1.5 Pro")]
+    QWEN --> EXEC
+    GEM --> EXEC
+    EXEC --> AGG --> ORC
+```
 
 QwenFlow is a pipeline-oriented orchestrator. A **workflow** is a DAG of **steps**; each step names a Qwen model, a prompt template, and an optional retry/fallback policy. Execution flows through five layers:
 
@@ -274,7 +308,7 @@ npm run test:watch
 
 | Hackathon | Prize Pool | Our Angle |
 |-----------|-----------|-----------|
-| **Qwen Cloud AI Hackathon** | $70K | Multi-model orchestration + developer tooling across Qwen3, Qwen-VL, and Qwen-Audio |
+| **Qwen Cloud AI Hackathon** | $45K | Multi-model orchestration + developer tooling across Qwen3, Qwen-VL, and Qwen-Audio |
 | **Gemini XPRIZE** | $2M | Cross-provider routing that pairs Gemini's multimodal speed with Qwen's reasoning depth |
 
 ---
